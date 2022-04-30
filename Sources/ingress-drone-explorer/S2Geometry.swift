@@ -1,0 +1,247 @@
+import Foundation
+
+struct S2Cell : Hashable {
+
+    let face: UInt8
+    let level: UInt8
+
+    let i: Int
+    let j: Int
+
+    init(face: UInt8, i: Int, j: Int, level: UInt8 = 16) {
+        self.face = face
+        self.level = level
+        self.i = i
+        self.j = j
+    }
+
+    init(_ lngLat: LngLat, level: UInt8 = 16) {
+        self.level = level
+        let ecef = ECEFCoordinate(lngLat)
+        let (face, s, t) = ecef.faceST
+        self.face = face
+        let max = 1 << level
+        let range  = 0 ... max - 1
+        i = Int(floor(s * Double(max))).clamp(to: range)
+        j = Int(floor(t * Double(max))).clamp(to: range)
+    }
+}
+
+extension S2Cell : Identifiable {
+    var id: String {
+        "\(face).\(level).\(i).\(j)"
+    }
+}
+
+extension S2Cell {
+    var center: LngLat {
+        lngLat(dI: 0.5, dJ: 0.5)
+    }
+
+    var shape: [ LngLat ] {
+        [
+            lngLat(dI: 0, dJ: 0),
+            lngLat(dI: 0, dJ: 1),
+            lngLat(dI: 1, dJ: 1),
+            lngLat(dI: 1, dJ: 0)
+        ]
+    }
+
+    func lngLat(dI : Double, dJ: Double)  -> LngLat {
+        let max = Double(1 << level)
+        return ECEFCoordinate(face: face, s: (Double(i) + dI) / max, t: (Double(j) + dJ) / max).lngLat
+    }
+}
+
+extension S2Cell {
+    private static func wrap(face: UInt8, i: Int, j: Int, level: UInt8 = 16) -> S2Cell {
+        let max = 1 << level
+        if i >= 0 && j >= 0 && i < max && j < max {
+            return .init(face: face, i: i, j: j, level: level)
+        }
+        let (wrappedFace, wrappedS, wrappedT) =
+            ECEFCoordinate(face: face, s: (Double(i) + 0.5) / Double(max), t: (Double(j) + 0.5) / Double(max)).faceST
+        let range  = 0 ... max - 1
+        return .init(
+            face: wrappedFace,
+            i: Int(floor(wrappedS * Double(max))).clamp(to: range),
+            j: Int(floor(wrappedT * Double(max))).clamp(to: range),
+            level: level
+        )
+    }
+
+    func queryNeighbouredCellsCoveringCap(of center: LngLat, radius: Double) -> Set<S2Cell> {
+        var result : Set<S2Cell> = [ ]
+        var outsides : Set<S2Cell> = [ ]
+        var queue : Set = [ self ]
+        while let cell = queue.popFirst() {
+            if result.contains(cell) || outsides.contains(cell) { continue }
+            if (cell.intersectsWithCap(of: center, radius: radius)) {
+                result.insert(cell)
+                queue.formUnion(cell.neighbours)
+            } else {
+                outsides.insert(cell)
+            }
+        }
+        result.remove(self)
+        return result
+    }
+
+    private func intersectsWithCap(of center: LngLat, radius: Double) -> Bool {
+        let corners = shape.sorted { a, b in center.closer(to: a, than: b) }
+        return center.distance(to: corners[0]) < radius
+            || center.distance(to: (corners[0], corners[1])) < radius
+    }
+
+    private var neighbours : Set<S2Cell> {
+        [
+            .wrap(face: face, i: i - 1  , j: j      , level: level),
+            .wrap(face: face, i: i      , j: j - 1  , level: level),
+            .wrap(face: face, i: i + 1  , j: j      , level: level),
+            .wrap(face: face, i: i      , j: j + 1  , level: level),
+        ]
+    }
+}
+
+extension LngLat {
+
+    private static let earthRadius = 6371008.8
+
+    var theta: Double {
+        lng * Double.pi / 180.0
+    }
+
+    var phi: Double {
+        lat * Double.pi / 180.0
+    }
+
+    func distance(to other: LngLat) -> Double {
+        let sinT = sin((other.theta - theta) / 2)
+        let sinP = sin((other.phi - phi) / 2)
+        let a = sinP * sinP + sinT * sinT * cos(phi) * cos(other.phi)
+        return atan2(sqrt(a), sqrt(1 - a)) * 2 * Self.earthRadius
+    }
+
+    func distance(to segment: (a: LngLat, b: LngLat)) -> Double {
+        let c1 = (segment.b.lat - segment.a.lat) * (lat - segment.a.lat)
+            + (segment.b.lng - segment.a.lng) * (lng - segment.a.lng)
+        if c1 <= 0 {
+            return distance(to: segment.a)
+        }
+        let c2 = (segment.b.lat - segment.a.lat) * (segment.b.lat - segment.a.lat)
+            + (segment.b.lng - segment.a.lng) * (segment.b.lng - segment.a.lng)
+        if c2 <= c1 {
+            return distance(to: segment.b)
+        }
+        let ratio = c1 / c2;
+        return distance(to:
+            .init(
+                lng: segment.a.lng + ratio * (segment.b.lng - segment.a.lng),
+                lat: segment.a.lat + ratio * (segment.b.lat - segment.a.lat)
+            )
+        )
+    }
+
+    func closer(to a: LngLat, than b: LngLat) -> Bool {
+        let dA = (lng - a.lng) * (lng - a.lng) + (lat - a.lat) * (lat - a.lat)
+        let dB = (lng - b.lng) * (lng - b.lng) + (lat - b.lat) * (lat - b.lat)
+        return dA < dB
+    }
+}
+
+fileprivate struct ECEFCoordinate {
+    var x : Double
+    var y : Double
+    var z : Double
+}
+
+fileprivate extension ECEFCoordinate {
+    init(_ lngLat: LngLat) {
+        let theta = lngLat.theta
+        let phi = lngLat.phi
+        let cosPhi = cos(phi)
+        x = cos(theta) * cosPhi
+        y = sin(theta) * cosPhi
+        z = sin(phi)
+    }
+
+    var lngLat: LngLat {
+        .init(
+            lng: atan2(y, x) / Double.pi * 180.0,
+            lat: atan2(z, sqrt(x * x + y * y)) / Double.pi * 180.0
+        )
+    }
+}
+
+fileprivate extension ECEFCoordinate {
+    init(face: UInt8, s: Double, t: Double) {
+        let u =  (1 / 3.0) * (s >= 0.5 ? (4 * s * s - 1) : (1 - (4 * (1 - s) * (1 - s))))
+        let v =  (1 / 3.0) * (t >= 0.5 ? (4 * t * t - 1) : (1 - (4 * (1 - t) * (1 - t))))
+
+        switch face {
+        case 0:
+            x = 1
+            y = u
+            z = v
+        case 1:
+            x = -u
+            y = 1
+            z = v
+        case 2:
+            x = -u
+            y = -v
+            z = 1
+        case 3:
+            x = -1
+            y = -v
+            z = -u
+        case 4:
+            x = v
+            y = -1
+            z = -u
+        default:
+            x = v
+            y = u
+            z = -1
+        }
+    }
+
+    var faceST : (face: UInt8, s: Double, t: Double) {
+        var face: UInt8 = x > y ? (x > z ? 0 : 2) : (y > z ? 1 : 2)
+        if (face == 0 && x < 0) || (face == 1 && y < 0) || (face == 2 && z < 0) {
+            face += 3
+        }
+        var u, v : Double
+        switch face {
+        case 0:
+            u = y / x
+            v = z / x
+        case 1:
+            u = -x / y
+            v = z / y
+        case 2:
+            u = -x / z
+            v = y / z
+        case 3:
+            u = z / x
+            v = y / x
+        case 4:
+            u = z / y
+            v = -x / y
+        default:
+            u = -y / z
+            v = x / z
+        }
+        return (
+            face,
+            u >= 0 ? (0.5 * sqrt(1 + 3 * u)) : (1 - 0.5 * sqrt(1 - 3 * u)),
+            v >= 0 ? (0.5 * sqrt(1 + 3 * v)) : (1 - 0.5 * sqrt(1 - 3 * v))
+        )
+    }
+}
+
+fileprivate extension Comparable {
+    func clamp(to range: ClosedRange<Self>) -> Self {
+        min(max(self, range.lowerBound), range.upperBound)
+    }
+}
