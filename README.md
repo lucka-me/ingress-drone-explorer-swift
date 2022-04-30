@@ -1,6 +1,9 @@
-# Ingress Drone Explorer
+# Ingress Drone Explorer - Swift
 
 An offline CLI tool to analyze reachable Portals for Ingress Drone Mark I.
+
+A C++ implementation is also [available](https://github.com/lucka-me/ingress-drone-explorer-cpp).
+The Swift implementation is slower but the code is much simpler.
 
 ## Build
 
