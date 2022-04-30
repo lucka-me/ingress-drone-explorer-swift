@@ -7,7 +7,7 @@ An offline CLI tool to analyze reachable Portals for Ingress Drone Mark I.
 Install the latest Swift, clone the repository and simply:
 
 ```sh
-$ swift resolve
+$ swift package resolve
 $ swift build
 ```
 
@@ -35,20 +35,20 @@ Maybe an IITC plugin like [this](https://github.com/lucka-me/toolkit/tree/master
 ### Run
 
 ```sh
-./ingress-drone-explorer <path-to-portal-list-files> -s <start point>
+$ `swift build --show-bin-path`/ingress-drone-explorer <path-to-portal-list-files> -s <start point>
 ```
 
 Explore with key list:
 ```sh
-./ingress-drone-explorer ... -k <path-to-key-list-file>
+$ `swift build --show-bin-path`/ingress-drone-explorer ... -k <path-to-key-list-file>
 ```
 
 Output cells for IITC Draw tools:
 ```sh
-./ingress-drone-explorer ... --output-drawn-items <path-to-output>
+$ `swift build --show-bin-path`/ingress-drone-explorer ... --output-drawn-items <path-to-output>
 ```
 
 Help information:
 ```sh
-./ingress-drone-explorer -h
+$ `swift build --show-bin-path`/ingress-drone-explorer -h
 ```
