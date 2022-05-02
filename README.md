@@ -1,9 +1,13 @@
 # Ingress Drone Explorer - Swift
 
+[![CI Status](https://img.shields.io/github/workflow/status/lucka-me/ingress-drone-explorer-swift/CI?label=CI&logo=github-actions&logoColor=white)](https://github.com/lucka-me/ingress-drone-explorer-swift/actions/workflows/ci.yml "CI Workflow")
+
 An offline CLI tool to analyze reachable Portals for Ingress Drone Mark I.
 
 A C++ implementation is also [available](https://github.com/lucka-me/ingress-drone-explorer-cpp).
 The Swift implementation is slower but the code is much simpler.
+
+The CI workflow builds universal binary for macOS, the file is available as artifact.
 
 ## Build
 
