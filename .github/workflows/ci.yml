@@ -36,7 +36,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 Xswiftc -static-executable
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
       - name: Copy Binary
         run: |
           mkdir output
