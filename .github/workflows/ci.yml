@@ -30,3 +30,23 @@ jobs:
         with:
           name: ${{ env.BINARY_NAME }}-macos-universal
           path: output/${{ env.BINARY_NAME }}
+
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Resolve Package Dependencies
+        run: swift package resolve
+      - name: Build
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 Xswiftc -static-executable
+      - name: Copy Binary
+        run: |
+          mkdir output
+          cp `swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path`/${{ env.BINARY_NAME }} ./output/
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.BINARY_NAME }}-linux-x86_64
+          path: output/${{ env.BINARY_NAME }}
