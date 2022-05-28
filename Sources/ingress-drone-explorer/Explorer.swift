@@ -49,9 +49,15 @@ extension Explorer {
                 throw LoadError.invalidWildcard
             }
             let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+            #if !os(Windows) && !os(Linux)
             let predicate = NSPredicate(format: "SELF like %@", url.lastPathComponent)
+            #endif
             let matches = contents.filter { item in
+                #if !os(Windows) && !os(Linux)
                 predicate.evaluate(with: item.lastPathComponent)
+                #else
+                url.lastPathComponent.matches(wildcard: item.lastPathComponent)
+                #endif
             }.map { item in
                 // Replace the absolute path with argument path
                 directory.appendingPathComponent(item.lastPathComponent)
@@ -247,3 +253,51 @@ fileprivate extension String.StringInterpolation {
         appendLiteral("\(to.timeIntervalSinceReferenceDate - from.timeIntervalSinceReferenceDate) second(s)")
     }
 }
+
+#if os(Windows) || os(Linux)
+fileprivate extension String {
+    func matches(wildcard pattern: String) -> Bool {
+        var posT = startIndex
+        var posP = pattern.startIndex
+        let endT = endIndex
+        let endP = endIndex
+
+        // Match till first *
+        while posT <= endT && posP <= endP && pattern[posP] != "*" {
+            if self[posT] != pattern[posP] && pattern[posP] != "?" {
+                return false
+            }
+            posT = index(after: posT)
+            posP = pattern.index(after: posP)
+        }
+        var startT = posT
+        var startP: Index? = nil
+        while posT <= endT {
+            if pattern[posP] == "*" {
+                posP = pattern.index(after: posP)
+                // End with *
+                if endP < posP {
+                    break
+                }
+                startT = posT;
+                startP = posP;
+            } else if self[posT] == pattern[posP] || pattern[posP] == "?" {
+                posT = index(after: posT)
+                posP = pattern.index(after: posP)
+            } else if let startP = startP {
+                // Cover the segment with * and retry
+                startT = index(after: startT)
+                posP = startP;
+                posT = startT;
+            } else {
+                // Can not retry
+                return false;
+            }
+        }
+        while posP <= endP && pattern[posP] == "*" {
+            posP = pattern.index(after: posP)
+        }
+        return endP < posP;
+    }
+}
+#endif
