@@ -41,7 +41,8 @@ jobs:
         run: |
           New-Item -Path "${{ env.SWIFT_ROOT }}" -ItemType "directory"
           (New-Object System.Net.WebClient).DownloadFile("${{ env.SWIFT_URL }}", "${{ env.SWIFT_ROOT }}\installer.exe")
-          Start-Process -Wait -FilePath "${{ env.SWIFT_ROOT }}\installer.exe" "/SILENT"
+          Push-Location -Path "${{ env.SWIFT_ROOT }}"
+          Start-Process -Wait -FilePath ".\installer.exe" "/SILENT"
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
