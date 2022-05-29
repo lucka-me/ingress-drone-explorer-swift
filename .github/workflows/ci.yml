@@ -39,11 +39,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Swift
         run: |
-          New-Item -Path "${{ env.SWIFT_ROOT }}" -ItemType "directory"
-          Push-Location -Path "${{ env.SWIFT_ROOT }}"
-          (New-Object System.Net.WebClient).DownloadFile("${{ env.SWIFT_URL }}", ".\installer.exe")
-          ls
-          Start-Process -Wait -FilePath ".\installer.exe" "/SILENT"
+          Install-Binary -Url "${{ env.SWIFT_URL }}" -Name "installer.exe" -ArgumentList ("-q")
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
