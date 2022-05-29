@@ -40,8 +40,8 @@ jobs:
       - name: Setup Swift
         run: |
           New-Item -Path "${{ env.SWIFT_ROOT }}" -ItemType "directory"
-          (New-Object System.Net.WebClient).DownloadFile("${{ env.SWIFT_URL }}", "${{ env.SWIFT_ROOT }}\installer.exe")
           Push-Location -Path "${{ env.SWIFT_ROOT }}"
+          (New-Object System.Net.WebClient).DownloadFile("${{ env.SWIFT_URL }}", ".\installer.exe")
           ls
           Start-Process -Wait -FilePath ".\installer.exe" "/SILENT"
       - name: Resolve Package Dependencies
