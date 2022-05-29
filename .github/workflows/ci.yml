@@ -32,7 +32,7 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.6.1
-      SWIFT_URL: https://download.swift.org/swift-${{ github.SWIFT_VERSION }}-release/windows10/swift-${{ github.SWIFT_VERSION }}-RELEASE/swift-${{ github.SWIFT_VERSION }}-RELEASE-windows10.exe
+      SWIFT_URL: https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe
       SWIFT_ROOT: ${{ github.workspace }}\toolchain
     steps:
       - name: Checkout
