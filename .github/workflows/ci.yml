@@ -24,8 +24,38 @@ jobs:
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.BINARY_NAME }}-macos-universal
+          name: ${{ env.BINARY_NAME }}-${{ runner.os }}-universal
           path: output/${{ env.BINARY_NAME }}
+
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    env:
+      SWIFT_VERSION: 5.6.1
+      SWIFT_URL: https://download.swift.org/swift-${{ github.SWIFT_VERSION }}-release/windows10/swift-${{ github.SWIFT_VERSION }}-RELEASE/swift-${{ github.SWIFT_VERSION }}-RELEASE-windows10.exe
+      SWIFT_ROOT: ${{ github.workspace }}\toolchain
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Swift
+        run: |
+          New-Item -Path "${{ env.SWIFT_ROOT }}" -ItemType "directory"
+          (New-Object System.Net.WebClient).DownloadFile("${{ env.SWIFT_URL }}", "${{ env.SWIFT_ROOT }}\installer.exe")
+          Start-Process -Wait -FilePath "${{ env.SWIFT_ROOT }}\installer.exe" "/SILENT"
+      - name: Resolve Package Dependencies
+        run: swift package resolve
+      - name: Build
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+      - name: Copy Binary
+        run: |
+          New-Item -Path "output" -ItemType "directory"
+          $binPath = swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
+          Copy-Item "$binPath\${{ env.BINARY_NAME }}" -Destination ".\output"
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ runner.os }}-x86_64
+          path: output\${{ env.BINARY_NAME }}
 
   build-linux:
     name: Build for Linux
@@ -44,5 +74,5 @@ jobs:
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.BINARY_NAME }}-linux-x86_64
+          name: ${{ env.BINARY_NAME }}-${{ runner.os }}-x86_64
           path: output/${{ env.BINARY_NAME }}
