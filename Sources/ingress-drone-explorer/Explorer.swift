@@ -188,13 +188,13 @@ extension Explorer {
         let unreachableDigitCount = (portalsCount - reachablePortalsCount).digitCount
         print(
             "⬜️ In \(cells.count, width: totalDigitCount)   cell(s),",
-            "\(reachableCells.count, width: reachableDigitCount) are 🟢 reachable,",
-            "\(cells.count - reachableCells.count, width: unreachableDigitCount) are 🔴 not."
+            "\(reachableCells.count, width: reachableDigitCount) are ✅ reachable,",
+            "\(cells.count - reachableCells.count, width: unreachableDigitCount) are ⛔️ not."
         )
         print(
             "📍 In \(portalsCount, width: totalDigitCount) Portal(s),",
-            "\(reachablePortalsCount, width: reachableDigitCount) are 🟢 reachable,",
-            "\(portalsCount - reachablePortalsCount, width: unreachableDigitCount) are 🔴 not."
+            "\(reachablePortalsCount, width: reachableDigitCount) are ✅ reachable,",
+            "\(portalsCount - reachablePortalsCount, width: unreachableDigitCount) are ⛔️ not."
         )
         print(
             "🛬 The furthest Portal is \(furthestPortal.title ?? "Untitled").",
