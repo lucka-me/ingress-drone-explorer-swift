@@ -1,6 +1,6 @@
 # Ingress Drone Explorer - Swift
 
-[![CI Status](https://img.shields.io/github/workflow/status/lucka-me/ingress-drone-explorer-swift/CI?label=CI&logo=github-actions&logoColor=white)](https://github.com/lucka-me/ingress-drone-explorer-swift/actions/workflows/ci.yml "CI Workflow")
+[![CI](https://github.com/lucka-me/ingress-drone-explorer-swift/actions/workflows/ci.yml/badge.svg)](https://github.com/lucka-me/ingress-drone-explorer-swift/actions/workflows/ci.yml "CI Workflow")
 
 An offline CLI tool to analyze reachable Portals for Ingress Drone Mark I.
 
