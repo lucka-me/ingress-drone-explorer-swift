@@ -211,7 +211,7 @@ extension Explorer {
         let items = cells.map { entry in
             DrawnItem(
                 type: "polygon",
-                color: reachableCells.contains(entry.key) ? "#00ff00" : "ff0000",
+                color: reachableCells.contains(entry.key) ? "#783cbd" : "#404040",
                 latLngs: entry.key.shape
             )
         }
