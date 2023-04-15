@@ -20,7 +20,7 @@ jobs:
       - name: Copy Binary
         run: |
           mkdir output
-          cp `swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --arch arm64 --show-bin-path`/${{ env.BINARY_NAME }} ./output/
+          cp $(swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --arch arm64 --show-bin-path)/${{ env.BINARY_NAME }} ./output/
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
@@ -39,6 +39,7 @@ jobs:
       - name: Setup Swift
         run: |
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
+          & "${{ env.SWIFT_EXECUTABLE }}"
           & "${{ env.SWIFT_EXECUTABLE }}" --version
       - name: Resolve Package Dependencies
         run: |
@@ -66,11 +67,11 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -static-swift-stdlib
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --static-swift-stdlib
       - name: Copy Binary
         run: |
           mkdir output
-          cp `swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path`/${{ env.BINARY_NAME }} ./output/
+          cp $(swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path)/${{ env.BINARY_NAME }} ./output/
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
