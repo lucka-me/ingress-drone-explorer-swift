@@ -32,7 +32,7 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
-      SWIFT_PATH: %SystemDrive%\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
+      SWIFT_PATH: "%SystemDrive%/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
