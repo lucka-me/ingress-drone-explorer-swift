@@ -1,10 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches: [ 'main' ]
-  pull_request:
-    branches: [ 'main' ]
+on: [ 'push' ]
 
 env:
   BUILD_TYPE: release
@@ -24,9 +20,61 @@ jobs:
       - name: Copy Binary
         run: |
           mkdir output
-          cp `swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --arch arm64 --show-bin-path`/${{ env.BINARY_NAME }} ./output/
+          cp $(swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --arch arm64 --show-bin-path)/${{ env.BINARY_NAME }} ./output/
       - name: Upload Binary
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.BINARY_NAME }}-macos-universal
+          name: ${{ env.BINARY_NAME }}-${{ runner.os }}-universal
+          path: output/${{ env.BINARY_NAME }}
+
+  build-windows:
+    name: Build for Windows
+    if: ${{ false }}  # Disable, since Swift doesn't link runtime statically on Windows.
+    runs-on: windows-latest
+    env:
+      SWIFT_VERSION: 5.8
+      BINARY_NAME: ingress-drone-explorer.exe
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Swift
+        uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-${{ env.SWIFT_VERSION }}-release
+          tag: ${{ env.SWIFT_VERSION }}-RELEASE
+      - name: Resolve Package Dependencies
+        run: |
+          swift package resolve
+      - name: Build
+        run: |
+          swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --static-swift-stdlib
+      - name: Copy Binary
+        run: |
+          New-Item -Path "output" -ItemType "directory"
+          $binPath = swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
+          Copy-Item "$binPath\${{ env.BINARY_NAME }}" -Destination ".\output"
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ runner.os }}-x86_64
+          path: output\${{ env.BINARY_NAME }}
+
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Resolve Package Dependencies
+        run: swift package resolve
+      - name: Build
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --static-swift-stdlib
+      - name: Copy Binary
+        run: |
+          mkdir output
+          cp $(swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path)/${{ env.BINARY_NAME }} ./output/
+      - name: Upload Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ runner.os }}-x86_64
           path: output/${{ env.BINARY_NAME }}
