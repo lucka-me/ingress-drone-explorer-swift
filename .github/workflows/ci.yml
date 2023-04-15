@@ -32,24 +32,24 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
-      SWIFT_EXECUTABLE: C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin\swift.exe
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Swift
-        run: |
-          Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
-          ${{ env.SWIFT_EXECUTABLE }} --version
+        uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-${{ SWIFT_VERSION }}-release
+          tag: ${{ SWIFT_VERSION }}-RELEASE
       - name: Resolve Package Dependencies
         run: |
-          ${{ env.SWIFT_EXECUTABLE }} package resolve
+          swift package resolve
       - name: Build
         run: |
-          ${{ env.SWIFT_EXECUTABLE }} build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+          swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
       - name: Copy Binary
         run: |
           New-Item -Path "output" -ItemType "directory"
-          $binPath = ${{ env.SWIFT_EXECUTABLE }} build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
+          $binPath = swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
           Copy-Item "$binPath\${{ env.BINARY_NAME }}" -Destination ".\output"
       - name: Upload Binary
         uses: actions/upload-artifact@v3
