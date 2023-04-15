@@ -15,6 +15,9 @@ let package = Package(
             name: "ingress-drone-explorer",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            ],
+            linkerSettings: [
+                .linkedLibrary("c -static", .when(platforms: [ .linux ]))
             ]
         ),
     ]

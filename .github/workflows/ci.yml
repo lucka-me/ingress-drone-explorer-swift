@@ -39,9 +39,8 @@ jobs:
       - name: Setup Swift
         run: |
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
-          ls C:\
-          ls C:\Library
-          & "${{ env.SWIFT_EXECUTABLE }}" --version
+          ls C:\Library\Developer\Toolchains
+          ls C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
           winget install Swift.Toolchain
           swift --version
       - name: Resolve Package Dependencies
@@ -70,7 +69,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -v -Xswiftc -static-executable -Xlinker -lc -Xlinker -static
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -v -Xswiftc -static-executable
       - name: Copy Binary
         run: |
           mkdir output
