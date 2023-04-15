@@ -37,7 +37,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Swift
         run: |
-          Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
+          Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe"
+          swift --version
       - name: Resolve Package Dependencies
         run: swift.exe package resolve
       - name: Build
@@ -62,7 +63,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-stdlib -v
       - name: Copy Binary
         run: |
           mkdir output
