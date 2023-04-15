@@ -9,6 +9,8 @@ The Swift implementation is slower but the code is much simpler.
 
 The CI workflow builds universal binary for macOS and x86_64 binary for Linux, the file is available as artifact.
 
+The code itself is ready for Windows, but the compiler doesn't link Swift runtime statically. So the exe is not able to run without Swift dlls, and the workflow to build for Windows is disabled.
+
 ## Build
 
 Install the latest Swift, clone the repository and simply:
