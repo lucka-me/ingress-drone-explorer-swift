@@ -32,16 +32,16 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
-      SWIFT_EXECUTABLE: $env:SystemDrive\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\swift.exe
+      SWIFT_EXECUTABLE: $env:SystemDrive\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin\swift.exe
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Swift
         run: |
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
-          ls C:\Library\Developer\Toolchains
-          ls C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
-          winget install Swift.Toolchain
+          ls C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr
+          ls C:\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\usr\bin
+          & "${{ env.SWIFT_EXECUTABLE }}" --version
           swift --version
       - name: Resolve Package Dependencies
         run: |
@@ -69,7 +69,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -v -Xswiftc -static-executable
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -v -Xswiftc -static-stdlib
       - name: Copy Binary
         run: |
           mkdir output
