@@ -32,6 +32,7 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
+      BINARY_NAME: ingress-drone-explorer.exe
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -45,7 +46,7 @@ jobs:
           swift package resolve
       - name: Build
         run: |
-          swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+          swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --static-swift-stdlib
       - name: Copy Binary
         run: |
           New-Item -Path "output" -ItemType "directory"
