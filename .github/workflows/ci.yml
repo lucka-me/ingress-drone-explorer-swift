@@ -32,13 +32,14 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
-      SWIFT_PATH: "%SystemDrive%/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
+      SWIFT_PATH: "$env:SystemDrive/Library/Developer/Toolchains/unknown-Asserts-development.xctoolchain"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Swift
         run: |
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
+          ls ${{ env.SWIFT_PATH }}
           ${{ env.SWIFT_PATH }}/swift.exe --version
       - name: Resolve Package Dependencies
         run: ${{ env.SWIFT_PATH }}/swift.exe package resolve
@@ -64,7 +65,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-stdlib -Xswiftc -static-executable
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-stdlib -Xswiftc -static-swift-stdlib
       - name: Copy Binary
         run: |
           mkdir output
