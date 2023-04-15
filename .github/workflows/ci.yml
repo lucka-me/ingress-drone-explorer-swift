@@ -38,8 +38,8 @@ jobs:
       - name: Setup Swift
         uses: compnerd/gha-setup-swift@main
         with:
-          branch: swift-${{ SWIFT_VERSION }}-release
-          tag: ${{ SWIFT_VERSION }}-RELEASE
+          branch: swift-${{ env.SWIFT_VERSION }}-release
+          tag: ${{ env.SWIFT_VERSION }}-RELEASE
       - name: Resolve Package Dependencies
         run: |
           swift package resolve
