@@ -32,23 +32,22 @@ jobs:
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
-      SWIFT_PATH: $env:SystemDrive\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain
+      SWIFT_EXECUTABLE: $env:SystemDrive\Library\Developer\Toolchains\unknown-Asserts-development.xctoolchain\swift.exe
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Setup Swift
         run: |
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
-          ls ${{ env.SWIFT_PATH }}
-          ${{ env.SWIFT_PATH }}\swift.exe --version
+          "${{ env.SWIFT_EXECUTABLE }}" --version
       - name: Resolve Package Dependencies
-        run: ${{ env.SWIFT_PATH }}\swift.exe package resolve
+        run: "${{ env.SWIFT_EXECUTABLE }}" package resolve
       - name: Build
-        run: ${{ env.SWIFT_PATH }}\swift.exe build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+        run: "${{ env.SWIFT_EXECUTABLE }}" build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
       - name: Copy Binary
         run: |
           New-Item -Path "output" -ItemType "directory"
-          $binPath = ${{ env.SWIFT_PATH }}\swift.exe build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
+          $binPath = "${{ env.SWIFT_EXECUTABLE }}" build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
           Copy-Item "$binPath\${{ env.BINARY_NAME }}" -Destination ".\output"
       - name: Upload Binary
         uses: actions/upload-artifact@v3
@@ -65,7 +64,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable -Xlinker "lc++ -static"
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable -Xlinker "lc -static" -v
       - name: Copy Binary
         run: |
           mkdir output
