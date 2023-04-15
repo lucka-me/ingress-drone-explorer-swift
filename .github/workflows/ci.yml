@@ -41,9 +41,11 @@ jobs:
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
           "${{ env.SWIFT_EXECUTABLE }}" --version
       - name: Resolve Package Dependencies
-        run: "${{ env.SWIFT_EXECUTABLE }}" package resolve
+        run: |
+          "${{ env.SWIFT_EXECUTABLE }}" package resolve
       - name: Build
-        run: "${{ env.SWIFT_EXECUTABLE }}" build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+        run: |
+          "${{ env.SWIFT_EXECUTABLE }}" build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
       - name: Copy Binary
         run: |
           New-Item -Path "output" -ItemType "directory"
