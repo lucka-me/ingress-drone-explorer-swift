@@ -7,7 +7,7 @@ An offline CLI tool to analyze reachable Portals for Ingress Drone Mark I.
 A C++ implementation is also [available](https://github.com/lucka-me/ingress-drone-explorer-cpp).
 The Swift implementation is slower but the code is much simpler.
 
-The CI workflow builds universal binary for macOS, the file is available as artifact.
+The CI workflow builds universal binary for macOS and x86_64 binary for Linux, the file is available as artifact.
 
 ## Build
 

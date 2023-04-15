@@ -29,6 +29,7 @@ jobs:
 
   build-windows:
     name: Build for Windows
+    if: ${{ false }}  # Disable, since Swift doesn't link runtime statically on Windows.
     runs-on: windows-latest
     env:
       SWIFT_VERSION: 5.8
