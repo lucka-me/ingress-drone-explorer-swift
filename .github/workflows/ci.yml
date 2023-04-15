@@ -39,13 +39,13 @@ jobs:
         run: |
           Install-Binary -Url "https://download.swift.org/swift-${{ env.SWIFT_VERSION }}-release/windows10/swift-${{ env.SWIFT_VERSION }}-RELEASE/swift-${{ env.SWIFT_VERSION }}-RELEASE-windows10.exe" -Name "installer.exe" -ArgumentList ("-q")
       - name: Resolve Package Dependencies
-        run: swift package resolve
+        run: swift.exe package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+        run: swift.exe build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
       - name: Copy Binary
         run: |
           New-Item -Path "output" -ItemType "directory"
-          $binPath = swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
+          $binPath = swift.exe build -c ${{ env.BUILD_TYPE }} --arch x86_64 --show-bin-path
           Copy-Item "$binPath\${{ env.BINARY_NAME }}" -Destination ".\output"
       - name: Upload Binary
         uses: actions/upload-artifact@v3
@@ -62,7 +62,7 @@ jobs:
       - name: Resolve Package Dependencies
         run: swift package resolve
       - name: Build
-        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc -static-executable
+        run: swift build -c ${{ env.BUILD_TYPE }} --arch x86_64 -Xswiftc
       - name: Copy Binary
         run: |
           mkdir output
