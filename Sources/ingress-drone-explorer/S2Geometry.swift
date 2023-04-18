@@ -207,7 +207,9 @@ fileprivate extension ECEFCoordinate {
     }
 
     var faceST : (face: UInt8, s: Double, t: Double) {
-        var face: UInt8 = x > y ? (x > z ? 0 : 2) : (y > z ? 1 : 2)
+        let absX = fabs(x)
+        let absY = fabs(y)
+        var face: UInt8 = absX > absY ? (absX > fabs(z) ? 0 : 2) : (absY > fabs(z) ? 1 : 2)
         if (face == 0 && x < 0) || (face == 1 && y < 0) || (face == 2 && z < 0) {
             face += 3
         }
@@ -221,7 +223,7 @@ fileprivate extension ECEFCoordinate {
             v = z / y
         case 2:
             u = -x / z
-            v = y / z
+            v = -y / z
         case 3:
             u = z / x
             v = y / x
@@ -230,7 +232,7 @@ fileprivate extension ECEFCoordinate {
             v = -x / y
         default:
             u = -y / z
-            v = x / z
+            v = -x / z
         }
         return (
             face,
