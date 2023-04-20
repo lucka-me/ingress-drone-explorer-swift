@@ -15,10 +15,9 @@ struct S2Cell : Hashable {
         self.j = j
     }
 
-    init(_ lngLat: LngLat, level: UInt8 = 16) {
+    init(_ coordinate: Coordinate, level: UInt8 = 16) {
         self.level = level
-        let ecef = ECEFCoordinate(lngLat)
-        let (face, s, t) = ecef.faceST
+        let (face, s, t) = ECEFCoordinate(coordinate).faceST
         self.face = face
         let max = 1 << level
         let range  = 0 ... max - 1
@@ -34,22 +33,22 @@ extension S2Cell : Identifiable {
 }
 
 extension S2Cell {
-    var center: LngLat {
-        lngLat(dI: 0.5, dJ: 0.5)
+    var center: Coordinate {
+        coordinate(dI: 0.5, dJ: 0.5)
     }
 
-    var shape: [ LngLat ] {
+    var shape: [ Coordinate ] {
         [
-            lngLat(dI: 0, dJ: 0),
-            lngLat(dI: 0, dJ: 1),
-            lngLat(dI: 1, dJ: 1),
-            lngLat(dI: 1, dJ: 0)
+            coordinate(dI: 0, dJ: 0),
+            coordinate(dI: 0, dJ: 1),
+            coordinate(dI: 1, dJ: 1),
+            coordinate(dI: 1, dJ: 0)
         ]
     }
 
-    func lngLat(dI : Double, dJ: Double)  -> LngLat {
+    func coordinate(dI : Double, dJ: Double) -> Coordinate {
         let max = Double(1 << level)
-        return ECEFCoordinate(face: face, s: (Double(i) + dI) / max, t: (Double(j) + dJ) / max).lngLat
+        return ECEFCoordinate(face: face, s: (Double(i) + dI) / max, t: (Double(j) + dJ) / max).coordinate
     }
 }
 
@@ -70,7 +69,7 @@ extension S2Cell {
         )
     }
 
-    func queryNeighbouredCellsCoveringCap(of center: LngLat, radius: Double) -> Set<S2Cell> {
+    func neighboredCellsCoveringCap(of center: Coordinate, radius: Double) -> Set<S2Cell> {
         var result : Set<S2Cell> = [ ]
         var outsides : Set<S2Cell> = [ ]
         var queue : Set = [ self ]
@@ -78,7 +77,7 @@ extension S2Cell {
             if result.contains(cell) || outsides.contains(cell) { continue }
             if (cell.intersectsWithCap(of: center, radius: radius)) {
                 result.insert(cell)
-                queue.formUnion(cell.neighbours)
+                queue.formUnion(cell.neighbors)
             } else {
                 outsides.insert(cell)
             }
@@ -87,13 +86,26 @@ extension S2Cell {
         return result
     }
 
-    private func intersectsWithCap(of center: LngLat, radius: Double) -> Bool {
+    func neighboredCells(in rounds: Int) -> Set<S2Cell> {
+        var result : Set<S2Cell> = [ ]
+        for round in 0 ..< rounds {
+            for step in 0 ..< (round + 1) * 2 {
+                result.insert(.init(face: face, i: i - round - 1   , j: j - round + step, level: level)); // Left, upward
+                result.insert(.init(face: face, i: i - round + step, j: j + round + 1   , level: level)); // Top, rightward
+                result.insert(.init(face: face, i: i + round + 1   , j: j + round - step, level: level)); // Right, downward
+                result.insert(.init(face: face, i: i + round - step, j: j - round - 1   , level: level)); // Bottom, leftward
+            }
+        }
+        return result
+    }
+
+    func intersectsWithCap(of center: Coordinate, radius: Double) -> Bool {
         let corners = shape.sorted { a, b in center.closer(to: a, than: b) }
         return center.distance(to: corners[0]) < radius
             || center.distance(to: (corners[0], corners[1])) < radius
     }
 
-    private var neighbours : Set<S2Cell> {
+    private var neighbors : Set<S2Cell> {
         [
             .wrap(face: face, i: i - 1  , j: j      , level: level),
             .wrap(face: face, i: i      , j: j - 1  , level: level),
@@ -103,7 +115,7 @@ extension S2Cell {
     }
 }
 
-extension LngLat {
+extension Coordinate {
 
     private static let earthRadius = 6371008.8
 
@@ -115,14 +127,14 @@ extension LngLat {
         lat * Double.pi / 180.0
     }
 
-    func distance(to other: LngLat) -> Double {
+    func distance(to other: Coordinate) -> Double {
         let sinT = sin((other.theta - theta) / 2)
         let sinP = sin((other.phi - phi) / 2)
         let a = sinP * sinP + sinT * sinT * cos(phi) * cos(other.phi)
         return atan2(sqrt(a), sqrt(1 - a)) * 2 * Self.earthRadius
     }
 
-    func distance(to segment: (a: LngLat, b: LngLat)) -> Double {
+    func distance(to segment: (a: Coordinate, b: Coordinate)) -> Double {
         let c1 = (segment.b.lat - segment.a.lat) * (lat - segment.a.lat)
             + (segment.b.lng - segment.a.lng) * (lng - segment.a.lng)
         if c1 <= 0 {
@@ -142,7 +154,7 @@ extension LngLat {
         )
     }
 
-    func closer(to a: LngLat, than b: LngLat) -> Bool {
+    func closer(to a: Coordinate, than b: Coordinate) -> Bool {
         let dA = (lng - a.lng) * (lng - a.lng) + (lat - a.lat) * (lat - a.lat)
         let dB = (lng - b.lng) * (lng - b.lng) + (lat - b.lat) * (lat - b.lat)
         return dA < dB
@@ -156,16 +168,16 @@ fileprivate struct ECEFCoordinate {
 }
 
 fileprivate extension ECEFCoordinate {
-    init(_ lngLat: LngLat) {
-        let theta = lngLat.theta
-        let phi = lngLat.phi
+    init(_ coordinate: Coordinate) {
+        let theta = coordinate.theta
+        let phi = coordinate.phi
         let cosPhi = cos(phi)
         x = cos(theta) * cosPhi
         y = sin(theta) * cosPhi
         z = sin(phi)
     }
 
-    var lngLat: LngLat {
+    var coordinate: Coordinate {
         .init(
             lng: atan2(y, x) / Double.pi * 180.0,
             lat: atan2(z, sqrt(x * x + y * y)) / Double.pi * 180.0

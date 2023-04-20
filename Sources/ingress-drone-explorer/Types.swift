@@ -1,9 +1,9 @@
-struct LngLat {
+struct Coordinate {
     var lng: Double = 0
     var lat: Double = 0
 }
 
-extension LngLat {
+extension Coordinate {
     init?(_ text: String) {
         let components = text.split(separator: ",")
         if components.count != 2 { return nil }
@@ -24,7 +24,7 @@ extension LngLat {
     }
 }
 
-extension LngLat: Codable {
+extension Coordinate: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         lng = try container.decode(Double.self, forKey: .lng)
@@ -42,10 +42,10 @@ extension LngLat: Codable {
     }
 }
 
-struct Portal : Codable {
+struct Portal : Decodable {
     var guid = ""
     var title: String? = nil
-    var lngLat = LngLat()
+    var coordinate = Coordinate()
 }
 
 extension Portal : Hashable {
@@ -58,8 +58,20 @@ extension Portal : Hashable {
     }
 }
 
-struct DrawnItem : Codable {
+extension Portal {
+    enum CodingKeys: String, CodingKey {
+        case guid, title
+        case coordinate = "lngLat"
+    }
+}
+
+struct DrawnItem : Encodable {
     var type: String
     var color: String
-    var latLngs: [ LngLat ]
+    var shape: [ Coordinate ]
+
+    enum CodingKeys: String, CodingKey {
+        case type, color
+        case shape = "latLngs"
+    }
 }

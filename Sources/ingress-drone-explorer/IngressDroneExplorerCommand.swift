@@ -26,13 +26,13 @@ struct IngressDroneExplorerCommand : ParsableCommand {
         name: [ .short, .long ],
         help: ArgumentHelp("The starting point.", valueName: "longitude,latitude"),
         transform: { text in
-            guard let lngLat = LngLat(text) else {
+            guard let coordinate = Coordinate(text) else {
                 throw ValidationError("It should be formated as longitude,latitude.")
             }
-            return lngLat
+            return coordinate
         }
     )
-    var start: LngLat
+    var start: Coordinate
 
     @Option(
         name: [ .short, .customLong("key-list") ],
