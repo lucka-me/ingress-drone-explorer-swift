@@ -11,7 +11,7 @@ extension Explorer {
             print("🔍 Exploration finished after \(from: startTime, to: endTime)")
         }
 
-        var queue : CellSet = [ ]
+        var queue : Set<S2Cell> = [ ]
 
         if cells.keys.contains(startCell) {
             queue.insert(startCell)

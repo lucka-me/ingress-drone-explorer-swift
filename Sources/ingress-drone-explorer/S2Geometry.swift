@@ -26,12 +26,6 @@ struct S2Cell : Hashable {
     }
 }
 
-extension S2Cell : Identifiable {
-    var id: String {
-        "\(face).\(level).\(i).\(j)"
-    }
-}
-
 extension S2Cell {
     var center: Coordinate {
         coordinate(dI: 0.5, dJ: 0.5)
