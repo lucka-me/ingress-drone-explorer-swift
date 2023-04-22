@@ -8,7 +8,7 @@ let package = Package(
         .executable(name: "ingress-drone-explorer", targets: [ "ingress-drone-explorer" ])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.2.2")),
     ],
     targets: [
         .executableTarget(
