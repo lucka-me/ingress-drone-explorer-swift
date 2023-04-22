@@ -84,7 +84,7 @@ Average exploration time consumed of 100 executions on MacBook Air (M2).
 
 |         Implementation | Lines of Code   |  Commit                              | Consumed
 | ---------------------: | :-------------: | :----------------------------------: | :---
-|    [Swift][swift-repo] | ![][swift-loc]  | `Current`                            | 3.000 s
+|    [Swift][swift-repo] | ![][swift-loc]  | `Current`                            | 0.722 s
 |        [C++][cpp-repo] | ![][cpp-loc]    | [`db5a976`][cpp-benchmark-commit]    | 0.583 s
 | [Node.js][nodejs-repo] | ![][nodejs-loc] | [`7ad90e9`][nodejs-benchmark-commit] | 1.295 s
 

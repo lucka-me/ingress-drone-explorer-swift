@@ -16,27 +16,53 @@ extension Explorer {
         if cells.keys.contains(startCell) {
             queue.insert(startCell)
         } else {
-            queue = startCell.neighboredCellsCoveringCap(of: start, radius: Self.visibleRadius)
+            queue = startCell
+                .neighboredCellsCoveringCap(of: start, radius: Self.visibleRadius)
+                .intersection(cells.keys)
         }
 
         var previousTime = startTime.timeIntervalSinceReferenceDate
         let progressDigitCount = cells.count.digitCount
         while let cell = queue.popFirst() {
-            if reachableCells.contains(cell) { continue }
             guard let portals = cells[cell] else { continue }
             reachableCells.insert(cell)
-            cellsContainingKeys.removeValue(forKey: cell)
-            for portal in portals {
-                queue.formUnion(cell.neighboredCellsCoveringCap(of: portal.coordinate, radius: Self.visibleRadius))
-                cellsContainingKeys = cellsContainingKeys.filter { entry in
-                    guard !queue.contains(entry.key) else { return false }
-                    let reachable = entry.value.contains { target in
-                        portal.coordinate.distance(to: target.coordinate) < Self.reachableRadiusWithKey
+
+            // Get all neighbors in the visible range (also the possible ones), filter the empty/pending/reached ones
+            // and search for reachable ones
+            let neighbors = cell.neighboredCells(in: Int(Self.visibleRadius / 80.0) + 1)
+            for neighbor in neighbors {
+                guard
+                    !queue.contains(neighbor),
+                    !reachableCells.contains(neighbor),
+                    cells.keys.contains(neighbor)
+                else {
+                    continue
+                }
+                for portal in portals {
+                    if neighbor.intersectsWithCap(of: portal.coordinate, radius: Self.visibleRadius) {
+                        queue.insert(neighbor)
+                        break
                     }
-                    if reachable {
-                        queue.insert(entry.key)
+                }
+            }
+
+            // Find keys
+            /// TODO: Consider to use cell.neighboured_cells_in instead?
+            if !cellsContainingKeys.isEmpty {
+                for portal in portals {
+                    cellsContainingKeys = cellsContainingKeys.filter { entry in
+                        guard !queue.contains(entry.key) else { return false }
+                        for target in entry.value {
+                            if portal.coordinate.distance(to: target.coordinate) < Self.reachableRadiusWithKey {
+                                queue.insert(entry.key)
+                                return false
+                            }
+                        }
+                        return true
                     }
-                    return !reachable
+                    if cellsContainingKeys.isEmpty {
+                        break
+                    }
                 }
             }
 
