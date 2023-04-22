@@ -109,52 +109,6 @@ extension S2Cell {
     }
 }
 
-extension Coordinate {
-
-    private static let earthRadius = 6371008.8
-
-    var theta: Double {
-        lng * Double.pi / 180.0
-    }
-
-    var phi: Double {
-        lat * Double.pi / 180.0
-    }
-
-    func distance(to other: Coordinate) -> Double {
-        let sinT = sin((other.theta - theta) / 2)
-        let sinP = sin((other.phi - phi) / 2)
-        let a = sinP * sinP + sinT * sinT * cos(phi) * cos(other.phi)
-        return atan2(sqrt(a), sqrt(1 - a)) * 2 * Self.earthRadius
-    }
-
-    func distance(to segment: (a: Coordinate, b: Coordinate)) -> Double {
-        let c1 = (segment.b.lat - segment.a.lat) * (lat - segment.a.lat)
-            + (segment.b.lng - segment.a.lng) * (lng - segment.a.lng)
-        if c1 <= 0 {
-            return distance(to: segment.a)
-        }
-        let c2 = (segment.b.lat - segment.a.lat) * (segment.b.lat - segment.a.lat)
-            + (segment.b.lng - segment.a.lng) * (segment.b.lng - segment.a.lng)
-        if c2 <= c1 {
-            return distance(to: segment.b)
-        }
-        let ratio = c1 / c2;
-        return distance(to:
-            .init(
-                lng: segment.a.lng + ratio * (segment.b.lng - segment.a.lng),
-                lat: segment.a.lat + ratio * (segment.b.lat - segment.a.lat)
-            )
-        )
-    }
-
-    func closer(to a: Coordinate, than b: Coordinate) -> Bool {
-        let dA = (lng - a.lng) * (lng - a.lng) + (lat - a.lat) * (lat - a.lat)
-        let dB = (lng - b.lng) * (lng - b.lng) + (lat - b.lat) * (lat - b.lat)
-        return dA < dB
-    }
-}
-
 fileprivate struct ECEFCoordinate {
     var x : Double
     var y : Double

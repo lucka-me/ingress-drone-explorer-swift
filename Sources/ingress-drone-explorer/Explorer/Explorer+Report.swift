@@ -57,3 +57,14 @@ extension Explorer {
         print("💾 Saved drawn items to \(filename)")
     }
 }
+
+struct DrawnItem : Encodable {
+    var type: String
+    var color: String
+    var shape: [ Coordinate ]
+
+    enum CodingKeys: String, CodingKey {
+        case type, color
+        case shape = "latLngs"
+    }
+}
